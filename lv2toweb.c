@@ -55,6 +55,7 @@ LilvNode* uri_midi_event      = NULL;
 
 static char *opt_screenshot   = NULL;
 static char *opt_index        = NULL;
+static bool opt_indextable    = false;
 
 static const int port_direction(const LilvPlugin* p, uint32_t index) {
 	const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
@@ -118,6 +119,26 @@ static const char* port_name(const LilvPlugin* p, const LilvPort* port) {
 	return lilv_node_as_string(name);
 }
 
+static const char* plugin_name(const LilvPlugin* p) {
+	LilvNode* val = NULL;
+	char const *title = "";
+	val = lilv_plugin_get_name(p);
+	if (val) {
+		title = lilv_node_as_string(val);
+		lilv_node_free(val);
+	}
+	return title;
+}
+
+static const char* plugin_class(const LilvPlugin* p) {
+	const LilvPluginClass* pclass      = lilv_plugin_get_class(p);
+	const LilvNode*       class_label  = lilv_plugin_class_get_label(pclass);
+	if (class_label) {
+		return lilv_node_as_string(class_label);
+	}
+	return "";
+}
+
 static const char * port_docs(const LilvPlugin* p, uint32_t idx) {
 	LilvNodes* comments = lilv_port_get_value(p,
 			lilv_plugin_get_port_by_index(p, idx),
@@ -138,6 +159,37 @@ static const char * plugin_docs(const LilvPlugin* p) {
 		return docs;
 	}
 	return NULL;
+}
+
+static void count_ports(const LilvPlugin* p,
+		int *in_audio, int *in_midi, int *in_ctrl,
+		int *out_audio, int *out_midi, int *out_ctrl) {
+
+	*in_audio = *in_midi = *in_ctrl = 0;
+	*out_audio = *out_midi = *out_ctrl = 0;
+
+	const uint32_t num_ports = lilv_plugin_get_num_ports(p);
+	for (uint32_t i = 0; i < num_ports; ++i) {
+		const LilvPort* port = lilv_plugin_get_port_by_index(p, i);
+		if (!port) { continue; }
+		if (port_direction(p, i) == 1) {
+			switch (port_type(p, port)) {
+				case 2: (*in_audio)++; break;
+				case 4: (*in_midi)++; break;
+				case 1: (*in_ctrl)++; break;
+				case 3: (*in_ctrl)++; break;
+				default: break;
+			}
+		} else if (port_direction(p, i) == 2) {
+			switch (port_type(p, port)) {
+				case 2: (*out_audio)++; break;
+				case 4: (*out_midi)++; break;
+				case 1: (*out_ctrl)++; break;
+				case 3: (*out_ctrl)++; break;
+				default: break;
+			}
+		}
+	}
 }
 
 struct kv {
@@ -180,7 +232,12 @@ print_port(const LilvPlugin* p,
 	const int portType = port_type(p, port);
 	int portAttrib=0;
 
-	printf("<h3>%d) %s</h3>\n", idx, port_name(p, port));
+	if (format) {
+		printf("<h3>%d) %s</h3>\n", idx, port_name(p, port));
+	} else {
+		printf("<div class=\"toplink\"><a href=\"#top\">&nbsp;&uarr;&nbsp;</a></div>\n");
+		printf("<h3><a name=\"portdoc%d\">%d</a>) %s</h3>\n", idx, idx, port_name(p, port));
+	}
 	printf("<p class=\"port %s\">(", port_class(p, port));
 
 #if 0
@@ -304,7 +361,7 @@ print_port(const LilvPlugin* p,
 	lilv_nodes_free(designations);
 
 
-	if (lilv_port_is_a(p, port, control_class)) {
+	if (format == 0 && lilv_port_is_a(p, port, control_class)) {
 		// TODO print as integers if port is integer or enum
 		if ((portAttrib&2) == 0) { // not enums
 			printf("<table class=\"portrange\">\n");
@@ -322,7 +379,7 @@ print_port(const LilvPlugin* p,
 	}
 
 	LilvScalePoints* points = lilv_port_get_scale_points(p, port);
-	if (lilv_scale_points_size(points) > 0) {
+	if (format == 0 && lilv_scale_points_size(points) > 0) {
 		struct kv *kvpairs;
 		kvpairs = malloc(lilv_scale_points_size(points) * sizeof(struct kv));
 		int j = 0;
@@ -354,35 +411,38 @@ print_port(const LilvPlugin* p,
 static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	LilvNode* val = NULL;
 
-	char const *title = "";
-	val = lilv_plugin_get_name(p);
-	if (val) {
-		title = lilv_node_as_string(val);
-		lilv_node_free(val);
-	}
+	char const *title = plugin_name(p);
 
 	/* HTML HEADER */
 	printf(xhtml_header, title);
 
 	const LilvPluginClass* pclass      = lilv_plugin_get_class(p);
-	const LilvNode*       class_label  = lilv_plugin_class_get_label(pclass);
+	const LilvNode*        class_label = lilv_plugin_class_get_label(pclass);
 
-	printf("<h1>LV2 Doc &laquo;%s&raquo;\n", title);
+	printf("<h1><a name=\"top\"/>LV2 Doc &laquo;%s&raquo;\n", title);
 	if (class_label) {
 		printf(" [%s]\n", lilv_node_as_string(class_label));
 	}
 	printf("</h1>\n");
 
 	if (opt_index) {
-		printf("<p><a href=\"%s\">Back to Index</a></p>\n", opt_index);
+		printf("<p class=\"backlink\"><a href=\"%s\">Back to Index</a></p>\n", opt_index);
 	}
 
 	printf("<div id=\"pluginmeta\"><dl>\n");
+
+	const char *doc = plugin_docs(p);
+	if (doc) {
+		printf("<p class=\"desc\">Description</p>\n");
+		printf("<p class=\"docs\">%s</p>\n", doc);
+	}
+
+	printf(" <dt>Title</dt><dd>%s</dd>\n", title);
+
 	printf(" <dt>URI</dt><dd><a href=\"%s\">%s</a></dd>\n",
 			lilv_node_as_uri(lilv_plugin_get_uri(p))
 			,lilv_node_as_uri(lilv_plugin_get_uri(p))
 			);
-	printf(" <dt>Title</dt><dd>%s</dd>\n", title);
 
 	if (class_label) {
 		printf(" <dt>Class</dt><dd>%s</dd>\n", lilv_node_as_string(class_label));
@@ -445,9 +505,19 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	if (lilv_nodes_size(features) > 0) {
 		printf("<dt>Required Feature%s</dt><dd><ul>\n", lilv_nodes_size(features) > 1 ? "s" : "");
 		LILV_FOREACH(nodes, i, features) {
+			const char *ft = lilv_node_as_uri(lilv_nodes_get(features, i));
+			printf("<li>");
 			// TODO replace URI -> name
-			printf("<li>%s</li>\n",
-					lilv_node_as_uri(lilv_nodes_get(features, i)));
+			if (!strcmp(ft, "http://lv2plug.in/ns/ext/urid#map")) {
+				printf("URI map");
+			} else if (!strcmp(ft, "http://lv2plug.in/ns/lv2core#isLive")) {
+				printf("Live - must be run in realtime");
+			} else {
+				printf("%s", ft);
+			}
+			printf("</li>\n");
+
+
 		}
 		printf("</ul></dd>\n");
 	}
@@ -458,9 +528,19 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	if (lilv_nodes_size(features) > 0) {
 		printf("<dt>Optional Feature%s</dt><dd><ul>\n", lilv_nodes_size(features) > 1 ? "s" : "");
 		LILV_FOREACH(nodes, i, features) {
+			const char *ft = lilv_node_as_uri(lilv_nodes_get(features, i));
+			printf("<li>");
 			// TODO replace URI -> name
-			printf("<li>%s</li>\n",
-					lilv_node_as_uri(lilv_nodes_get(features, i)));
+			if (!strcmp(ft, "http://lv2plug.in/ns/extensions/ui#inPlaceBroken")) {
+				printf("No In-Place Processing");
+			} else if (!strcmp(ft, "http://lv2plug.in/ns/lv2core#hardRTCapable")) {
+				printf("Hard Realtime Capable");
+			} else if (!strcmp(ft, "http://lv2plug.in/ns/lv2core#isLive")) {
+				printf("Live - can be run in realtime");
+			} else {
+				printf("%s", ft);
+			}
+			printf("</li>\n");
 		}
 		printf("</ul></dd>\n");
 	}
@@ -479,7 +559,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	lilv_nodes_free(data);
 
 	LilvNodes* presets = lilv_plugin_get_related(p, preset_class);
-	if (lilv_nodes_size(preset_class) > 0) {
+	if (lilv_nodes_size(presets) > 0) {
 		printf("<dt>Preset%s</dt><dd><ul>\n", lilv_nodes_size(presets) > 1 ? "s" : "");
 		LILV_FOREACH(nodes, i, presets) {
 			const LilvNode* preset = lilv_nodes_get(presets, i);
@@ -498,16 +578,16 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 
 	printf("</dl>\n");
 
-	const char *doc = plugin_docs(p);
-	if (doc) {
-		printf("<p class=\"desc\">Description</p>\n");
-		printf("<p class=\"docs\">%s</p>\n", doc);
-	}
-
 	if(opt_screenshot) {
-		printf("<img alt=\"Screenshot\" class=\"screenshot\" src=\"%s\"/>\n", opt_screenshot);
+		printf("<img alt=\"Screenshot\" class=\"screenshot\" src=\"%s\" onclick=\"showimg();\"/>\n", opt_screenshot);
 	}
 	printf("</div>\n"); // end meta box
+
+	if(opt_screenshot) {
+		printf("<div id=\"lightbox\" style=\"display:none;\" onclick=\"hideimg();\"/>\n");
+		printf("<div><img alt=\"Screenshot\" src=\"%s\"/></div>\n", opt_screenshot);
+		printf("</div>\n");
+	}
 
 	printf("<div id=\"portwrapper\">\n");
 	/* Ports */
@@ -541,9 +621,9 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 		printf("<tr>");
 		if (i < p_cin) {
 			const LilvPort* port = lilv_plugin_get_port_by_index(p, p_xin[i]);
-			printf("<td class=\"bgL %s\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\">%d) %s</td><td class=\"pbody left ptbl ptblLL\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\"><div>(%s)",
-					port_class(p, port), p_xin[i], p_xin[i], port_name(p, port),
-					p_xin[i], port_symbol(p,port));
+			printf("<td class=\"bgL %s\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\" onclick=\"jumpto(%d);\">%d) %s</td><td class=\"pbody left ptbl ptblLL\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\" onclick=\"jumpto(%d);\"><div>(%s)",
+					port_class(p, port), p_xin[i], p_xin[i], p_xin[i], port_name(p, port),
+					p_xin[i], p_xin[i], port_symbol(p,port));
 			print_port(p, p_xin[i], mins, maxes, defaults, 1);
 			printf("</div></td>");
 		} else {
@@ -553,11 +633,11 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 
 		if (i < p_cout) {
 			const LilvPort* port = lilv_plugin_get_port_by_index(p, p_xout[i]);
-			printf("<td class=\"pbody right ptbl ptblRR\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\"><div>(%s)",
-					p_xout[i], port_symbol(p, port));
+			printf("<td class=\"pbody right ptbl ptblRR\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\" onclick=\"jumpto(%d);\"><div>(%s)",
+					p_xout[i], p_xout[i], port_symbol(p, port));
 			print_port(p, p_xout[i], mins, maxes, defaults, 1);
-			printf("</div></td><td class=\"bgR %s\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\">%d) %s</td>",
-					port_class(p, port), p_xout[i], p_xout[i], port_name(p,port));
+			printf("</div></td><td class=\"bgR %s\" onmouseover=\"showdoc(%d);\" onmouseout=\"showdoc(-1);\" onclick=\"jumpto(%d);\">%d) %s</td>",
+					port_class(p, port), p_xout[i], p_xout[i], p_xout[i], port_name(p,port));
 		} else {
 			printf("<td class=\"pbody ptbl ptblRR\"></td><td></td>");
 		}
@@ -605,6 +685,7 @@ static void usage (int status) {
 "  -h, --help                display this help and exit\n"
 "  -i, --index <path>        add link to index\n"
 "  -s, --screenshot <path>   add link to screenshot\n"
+"  -t, --tableindex          create index page\n"
 "  -V, --version             print version information and exit\n"
 "\n");
   printf ("\n"
@@ -613,6 +694,9 @@ static void usage (int status) {
 "A screenshot of the plugin can be included, the image needs to be created by\n"
 "external means, the path is relative to the created page.\n"
 "lv2toweb writes the page to standard-out.\n"
+"\n"
+"If the tableindex option is given, multiple URLs can be specified on the\n"
+"commandline and the tool will create a summary overview table\n"
 	"\n");
   printf ("Report bugs to Robin Gareus <robin@gareus.org>\n"
           "Website: https://github.com/x42/lv2toweb/\n"
@@ -620,15 +704,12 @@ static void usage (int status) {
   exit (status);
 }
 	
-/**************************
- * main application code
- */
-
 static struct option const long_options[] =
 {
   {"help", no_argument, 0, 'h'},
   {"index", required_argument, 0, 'i'},
   {"screeshot", required_argument, 0, 's'},
+  {"tableindex", no_argument, 0, 't'},
   {"version", no_argument, 0, 'V'},
   {NULL, 0, NULL, 0}
 };
@@ -640,6 +721,7 @@ static int decode_switches (int argc, char **argv) {
 			   "h"	/* help */
 			   "i:"	/* index */
 			   "s:"	/* screeshot */
+			   "t"	/* index table */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
     {
@@ -650,6 +732,10 @@ static int decode_switches (int argc, char **argv) {
 
 	case 's':
 	  opt_screenshot = optarg;
+	  break;
+
+	case 't':
+	  opt_indextable = true;
 	  break;
 
 	case 'V':
@@ -668,26 +754,7 @@ static int decode_switches (int argc, char **argv) {
   return optind;
 }
 
-int main(int argc, char** argv) {
-	int ret = 0;
-	const char* plugin_file   = NULL;
-	const char* manifest_file = NULL;
-	const char* plugin_uri    = NULL;
-
-  int opt = decode_switches (argc, argv);
-	if (argc != opt + 1) { usage(EXIT_FAILURE); }
-	plugin_uri = argv[opt];
-
-	LilvWorld* world = lilv_world_new();
-	lilv_world_load_all(world);
-
-	LilvNode* uri = lilv_new_uri(world, plugin_uri);
-	if (!uri) {
-		fprintf(stderr, "Invalid plugin URI\n");
-		lilv_world_free(world);
-		return 1;
-	}
-
+static void lv2world_init(LilvWorld* world) {
 	control_class       = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
 	event_class         = lilv_new_uri(world, LILV_URI_EVENT_PORT);
 	group_pred          = lilv_new_uri(world, LV2_PORT_GROUPS__group);
@@ -699,34 +766,9 @@ int main(int argc, char** argv) {
 	uri_atom_buffertype = lilv_new_uri(world, LV2_ATOM__bufferType);
 	uri_atom_supports   = lilv_new_uri(world, LV2_ATOM__supports);
 	uri_midi_event      = lilv_new_uri(world, LILV_URI_MIDI_EVENT);
+}
 
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  p       = lilv_plugins_get_by_uri(plugins, uri);
-
-	if (p && plugin_file) {
-		LilvNode* base = lilv_new_uri(world, plugin_file);
-
-		FILE* plugin_fd = fopen(plugin_file, "a");
-		lilv_plugin_write_description(world, p, base, plugin_fd);
-		fclose(plugin_fd);
-
-		if (manifest_file) {
-			FILE* manifest_fd = fopen(manifest_file, "a");
-			lilv_plugin_write_manifest_entry(
-				world, p, base, manifest_fd, plugin_file);
-			fclose(manifest_fd);
-		}
-		lilv_node_free(base);
-	} else if (p) {
-		print_plugin(world, p);
-	} else {
-		fprintf(stderr, "Plugin not found.\n");
-	}
-
-	ret = (p != NULL ? 0 : -1);
-
-	lilv_node_free(uri);
-
+static void lv2world_free(LilvWorld* world) {
 	lilv_node_free(supports_event_pred);
 	lilv_node_free(designation_pred);
 	lilv_node_free(preset_class);
@@ -738,7 +780,115 @@ int main(int argc, char** argv) {
 	lilv_node_free(uri_atom_buffertype);
 	lilv_node_free(uri_atom_supports);
 	lilv_node_free(uri_midi_event);
-
 	lilv_world_free(world);
+}
+
+static int plugintohtml(LilvWorld* world, const char* plugin_uri) {
+	LilvNode* uri = lilv_new_uri(world, plugin_uri);
+	if (!uri) {
+		fprintf(stderr, "Invalid plugin URI\n");
+		return 1;
+	}
+
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin*  p       = lilv_plugins_get_by_uri(plugins, uri);
+
+	if (p) {
+		print_plugin(world, p);
+	} else {
+		fprintf(stderr, "Plugin not found.\n");
+	}
+
+	lilv_node_free(uri);
+	return (p != NULL ? 0 : -1);
+}
+
+static int indextable(LilvWorld* world, char * const * uris, int count) {
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	printf(xhtml_indexhead);
+	printf("<table>\n");
+	printf("<tr><th rowspan=\"2\" class=\"first\">Class</th><th rowspan=\"2\">Name</th>");
+	printf("<th colspan=\"2\">Audio/Midi/CTRL</th>");
+	printf("<th rowspan=\"2\">Description</th><th rowspan=\"2\">Author</th><th rowspan=\"2\">URI</th>\n");
+	printf("</tr><tr>\n");
+	printf("<th>in</th><th>out</th>");
+	printf("</tr>\n");
+	for (int i=0; i < count; ++i) {
+		LilvNode* uri = lilv_new_uri(world, uris[i]);
+		if (!uri) continue;
+		const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
+		if (!p) continue;
+		printf("<tr>");
+		char *link = strdup(uris[i]);
+		for (char *tmp = link; *tmp; ++tmp) {
+			if (*tmp >= 'a' && *tmp <= 'z') continue;
+			if (*tmp >= '0' && *tmp <= '9') continue;
+			if (*tmp >= 'A' && *tmp <= 'Z') continue;
+			*tmp='_';
+		}
+
+		printf("<td class=\"first center\">%s</td>", plugin_class(p));
+		printf("<td><a href=\"%s.html\">%s</a></td>", link, plugin_name(p));
+		free(link);
+
+		int in_audio, in_midi, in_ctrl;
+		int out_audio, out_midi, out_ctrl;
+		count_ports(p, &in_audio, &in_midi, &in_ctrl, &out_audio, &out_midi, &out_ctrl);
+		printf("<td class=\"center\">%d/%d/%d</td>", in_audio, in_midi, in_ctrl);
+		printf("<td class=\"center\">%d/%d/%d</td>", out_audio, out_midi, out_ctrl);
+
+		const char *doc = plugin_docs(p);
+		if (doc) {
+			printf("<td>%s</td>", doc);
+		} else {
+			printf("<td class=\"center\">-</td>");
+		}
+
+		LilvNode* nme = lilv_plugin_get_author_name(p);
+		if (nme) {
+			LilvNode *eml = lilv_plugin_get_author_email(p);
+			if (eml) {
+				printf("<td class=\"center\"><a href=\"%s\" rel=\"nofollow\" class=\"nl\">%s</a></td>",
+						lilv_node_as_string(eml),
+						lilv_node_as_string(nme));
+				lilv_node_free(eml);
+			} else {
+				printf("<td class=\"center\">%s</td>", lilv_node_as_string(nme));
+			}
+			lilv_node_free(nme);
+		} else {
+			printf("<td class=\"center\">?</td>");
+		}
+		printf("<td><a href=\"%s\" rel=\"nofollow\" class=\"nl\">%s</a></td>", uris[i], uris[i]);
+		printf("</tr>\n");
+		lilv_node_free(uri);
+	}
+	printf("<tr><td class=\"last\" colspan=\"7\"></td></tr>\n");
+	printf("</table>\n");
+	printf(xhtml_footer);
+	return 0;
+}
+
+int main(int argc, char** argv) {
+	int ret = 0;
+  int opt = decode_switches (argc, argv);
+
+	if (opt_indextable) {
+		if (argc <= opt) { usage(EXIT_FAILURE); }
+	} else {
+		if (argc != opt + 1) { usage(EXIT_FAILURE); }
+	}
+
+	LilvWorld* world = lilv_world_new();
+	lilv_world_load_all(world);
+	lv2world_init(world);
+
+	if (!opt_indextable) {
+		ret = plugintohtml(world, argv[opt]);
+	} else {
+		ret = indextable(world, &argv[opt], argc - opt);
+	}
+
+	lv2world_free(world);
 	return ret;
 }

@@ -11,6 +11,8 @@
 
 #define ARROWRIGHT_ICON "background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAANCAYAAACzbK7QAAAAAXNSR0IArs4c6QAAAAZiS0dEAL8AvwC//ggzigAAAapJREFUOMutlM9KW1EQxn9zvCnFyG0hSrmthhJQGxChlbpxJVknfYD4Gt0L2eUZ7lskkEUgUMFFG+gi/lloV7VBxD+LlKiX9ma6mZtKNgnRA4ezmTPf9803M8KUR1Ud4AABFIhFREfjZMrkM8AckAGeA3fAJXArIoNHARhzH1gG1oAXwDnwHTgDoodKXPJJVVOq+mzcNcavgPV+v/++1WptAe+AFSAL+KYQAM8YzQIL9roxIlLAGyDbbrezhULhk6peA5sGfACcqmpPRAaiqilgEfgILAHeGAAHpIF5IC0iO7lc7iafz1/W6/UG0AG+AGci8sczH9LAUiaT2RUR8X3/fpwXIjL0L4oir9ForIjIqqp+tkoIo2yr1eqec84LgiCaIL/rdDovK5XKRrfb9YvF4mmtVlu2lv0f+KBEm/amJijRLLBQKpW2m83m23K5fByG4T5wAZwAX4FfSYli4Ar4BhxNYLJnRD7EcRwHQdALw3AP+AEcAj8tXzycA+ukmQnnIumiDeC1EboGjg2kB/xNBm7aQRt2keW4NZDfIhI/xaoYVZzsosFo7D8N5K8UUKG/kgAAAABJRU5ErkJggg==);"
 
+#define DIMMER_BG "background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9gLCgMmI0krqZgAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAHUlEQVQ4y2NkYGCoZ6AAMDFQCEYNGDVg1IDBYgAARyIAn4UMLlsAAAAASUVORK5CYII=);"
+
 static const char xhtml_header[] =
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
 "  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
@@ -19,7 +21,7 @@ static const char xhtml_header[] =
 "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"
 "  <title>%s [LV2 Plugin Doc]</title>\n"
 "  <style type=\"text/css\">\n"
-"body {font-size:12px;}\n"
+"body {font-size:12px; background:#888;}\n"
 ".plugintable {border:0px; border-spacing:0; border-collapse:separate; margin:0em auto;}\n"
 ".plugintable td div {min-height:20px;}\n"
 ".plugintable td {padding:.5em 2em 0em 2em; border-width:0; cursor:crosshair;}\n"
@@ -32,6 +34,8 @@ static const char xhtml_header[] =
 "td.pbody {background:#cccccc; font-size:90%%; padding: .25em 1em;}\n"
 ".left {text-align:left;}\n"
 ".right {text-align:right;}\n"
+".toplink {float:right; margin:1em 0 0 0;}\n"
+".toplink a {color:black; text-decoration:none;}\n"
 
 "p {margin: .25em 0;}\n"
 "p.port {background-position:top left; line-height:24px; padding-left:28px; background-repeat:no-repeat; min-height:24px;}\n"
@@ -44,13 +48,17 @@ static const char xhtml_header[] =
 "dd {margin-left:1em;}\n"
 "ul {padding:0 0 0 1.25em; margin:0;}\n"
 
+"p.backlink {margin-bottom:1em;}\n"
 "p.docs {max-width:30em;}\n"
-"img.screenshot {max-width:100%%; margin:.5em auto .25em auto;}\n"
+"img.screenshot {max-width:100%%; margin:.5em auto .25em auto; cursor:pointer;}\n"
 
-"#pluginmeta {margin:1em; padding:1em; border:1px solid #ccc; float:left; max-width:22em;}\n"
-"#portwrapper {max-width:60em; margin:0em auto; float:left;}\n"
-"#plugintable {margin:1em 0; padding:1em; border:1px solid #ccc;}\n"
-"#portlist {margin:1em auto; padding:1em; border:1px solid #ccc; min-width:45em;}\n"
+"#pluginmeta {margin:0 1em; padding:1em; border:1px solid #ccc; float:left; max-width:22em; background-color:#fff;}\n"
+"#portwrapper {max-width:60em; margin:0em auto; float:left; background-color:#fff;}\n"
+"#plugintable {margin:1em 0; padding:1em;}\n"
+"#portlist {margin:1em auto; padding:1em; min-width:45em;}\n"
+"#lightbox {position:fixed; z-index:100; margin:0; top:0; left:0; width:100%%; height:100%%; text-align:center; "DIMMER_BG"}\n"
+"#lightbox div {background:#fff; border-radius:10px; display:inline-block; margin:3em 0;}\n"
+"#lightbox img {margin:1.5em; border:1px solid black;}\n"
 
 "#inputportlist  {width:45%%; float:left;}\n"
 "#outputportlist {width:45%%; float:right;}\n"
@@ -58,7 +66,7 @@ static const char xhtml_header[] =
 "td.ptbl div {position:relative;}\n"
 "td.ptblLL div.portinfo {position:absolute; left:0px; background-position: top left; "ARROWLEFT_ICON"}\n"
 "td.ptblRR div.portinfo {position:absolute; right:0px; background-position: top right; "ARROWRIGHT_ICON"}\n"
-"div.portinfo {z-index:20; top:1.25em; background-color:#ddd; background-repeat:no-repeat; border-radius:10px; padding: 1em; border:1px solid #ccc; min-width:18em; text-align:left;}\n"
+"div.portinfo {z-index:20; top:1.25em; background-color:#eee; background-repeat:no-repeat; border-radius:10px; padding: 1em; border:1px solid #aaa; min-width:18em; text-align:left;}\n"
 "div.port {margin:.5em .5em 1em .5em; border-top:1px dotted #ccc; padding: 0 .5em; min-width:18em;}\n"
 
 "span.portproperty {padding:0 .5em 0 0; border-bottom:1px dotted #ccc;}\n"
@@ -78,17 +86,47 @@ static const char xhtml_header[] =
 "  <script type=\"text/javascript\">\n"
 "  //<![CDATA[\n"
 "  function showdoc(p) {\n"
-"    for(i=0; i< num_ports; ++i) { \n"
+"    for(i=0; i< num_ports; ++i) {\n"
 "      var el = document.getElementById('port'+i);\n"
 "      if (!el) {continue};\n"
 "      if (i==p) {el.style.display='block';}\n"
 "      else {el.style.display='none';}\n"
 "    }\n"
 "  }\n"
+"  function jumpto(p){window.location.hash='portdoc'+p;}\n"
+"  function hideimg(){\n"
+"    var lb = document.getElementById('lightbox');\n"
+"    if (lb) {lb.style.display='none';};\n"
+"  }\n"
+"  function showimg(){\n"
+"    var lb = document.getElementById('lightbox');\n"
+"    if (lb) {lb.style.display='block';};\n"
+"  }\n"
 "  //]]>\n"
 "  </script>\n"
 "  </head>\n"
 "  <body>\n";
+
+static const char xhtml_indexhead[] =
+"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+"<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">\n"
+"  <head>\n"
+"  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"
+"  <title>LV2 Plugin Documentation</title>\n"
+"  <style type=\"text/css\">\n"
+"body {font-size:12px; background:#888;}\n"
+"table {border:1px solid black; background:#fff; margin:1em auto; padding:.5em; border-spacing:0; border-collapse:separate;}\n"
+"td {border-right:1px dotted black; border-top:1px solid black; margin:0; padding:.2em .5em;}\n"
+"td.first, th.first {border-left:1px dotted black;}\n"
+"th {border-right:1px dotted black; padding:.2em .5em;}\n"
+"td.last {border-left:0px; border-right:0px;}\n"
+".center {text-align:center;}\n"
+"a.nl {color:black; text-decoration:none;}\n"
+"  </style>\n"
+"  </head>\n"
+"  <body>\n"
+"<!-- start of page !-->\n";
 
 static const char xhtml_footer[] =
 " </body>\n"
