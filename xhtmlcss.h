@@ -1,3 +1,19 @@
+/*
+  Copyright 2013 Robin Gareus <robin@gareus.org>
+
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted, provided that the above
+  copyright notice and this permission notice appear in all copies.
+
+  THIS SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
+
 // http://webcodertools.com/imagetobase64converter/Create
 #define MIDI_ICON " background-image: url(data:image/png;base64,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)"
 
@@ -81,6 +97,8 @@ static const char xhtml_header[] =
 "td.ptblBR{border-width: 0px 1px 1px 0px; border-radius:0px 0px 10px 0px;}\n"
 "td.ptblRR{border-width: 0px 1px 0px 0px;}\n"
 "td.ptblLL{border-width: 0px 0px 0px 1px;}\n"
+
+"div.footer {margin:1em auto; font-size:80%%; color:#444; text-align:center; width:50%%;}\n"
 "  </style>\n"
 
 "  <script type=\"text/javascript\">\n"
@@ -122,6 +140,7 @@ static const char xhtml_indexhead[] =
 "th {border-right:1px dotted black; padding:.2em .5em;}\n"
 "td.last {border-left:0px; border-right:0px;}\n"
 ".center {text-align:center;}\n"
+"div.footer {margin:1em auto; font-size:80%%; color:#444; text-align:center; width:50%%;}\n"
 "a.nl {color:black; text-decoration:none;}\n"
 "  </style>\n"
 "  </head>\n"
@@ -129,5 +148,8 @@ static const char xhtml_indexhead[] =
 "<!-- start of page !-->\n";
 
 static const char xhtml_footer[] =
+"<!-- end of page !-->\n"
+"<div style=\"clear:both;\"></div>\n"
+"<div class=\"footer\"><hr/>Created by <a href=\"https://github.com/x42/lv2toweb\">lv2toweb</a>. %s</div>\n"
 " </body>\n"
 " </html>\n";

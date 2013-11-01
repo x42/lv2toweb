@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <time.h>
 
 #include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
@@ -190,6 +191,16 @@ static void count_ports(const LilvPlugin* p,
 			}
 		}
 	}
+}
+
+static void print_footer_with_mtime() {
+	char timestring[200];
+	time_t t;
+	struct tm *tmp;
+	t = time(NULL);
+	tmp = gmtime(&t);
+	strftime(timestring, sizeof(timestring), "Generated on %F %T %Z", tmp);
+	printf(xhtml_footer, timestring);
 }
 
 struct kv {
@@ -551,8 +562,14 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	if (data && lilv_nodes_size(data) > 0) {
 		printf("<dt>Extension Data</dt><dd><ul>\n");
 		LILV_FOREACH(nodes, i, data) {
-			printf("<li>%s</li>\n",
-					lilv_node_as_uri(lilv_nodes_get(data, i)));
+			const char *ed = lilv_node_as_uri(lilv_nodes_get(data, i));
+			printf("<li>");
+			if (!strcmp(ed, "http://lv2plug.in/ns/ext/state#interface")) {
+				printf("State Interface");
+			} else {
+				printf("%s", ed);
+			}
+			printf("</li>\n");
 		}
 		printf("</ul></dd>\n");
 	}
@@ -673,7 +690,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	free(p_xout);
 
 	// HTML FOOTER
-	printf(xhtml_footer);
+	print_footer_with_mtime();
 }
 
 static void usage (int status) {
@@ -865,7 +882,7 @@ static int indextable(LilvWorld* world, char * const * uris, int count) {
 	}
 	printf("<tr><td class=\"last\" colspan=\"7\"></td></tr>\n");
 	printf("</table>\n");
-	printf(xhtml_footer);
+	print_footer_with_mtime();
 	return 0;
 }
 
