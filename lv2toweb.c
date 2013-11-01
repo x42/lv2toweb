@@ -144,12 +144,12 @@ static const char * port_docs(const LilvPlugin* p, uint32_t idx) {
 	LilvNodes* comments = lilv_port_get_value(p,
 			lilv_plugin_get_port_by_index(p, idx),
 			uri_rdfs_comment);
-  if (comments) {
-    const char *docs = lilv_node_as_string(lilv_nodes_get_first(comments));
-    lilv_nodes_free(comments);
-    return docs;
-  }
-  return NULL;
+	if (comments) {
+		const char *docs = lilv_node_as_string(lilv_nodes_get_first(comments));
+		lilv_nodes_free(comments);
+		return docs;
+	}
+	return NULL;
 }
 
 static const char * plugin_docs(const LilvPlugin* p) {
@@ -705,41 +705,40 @@ static void usage (int status) {
 "  -t, --tableindex <file>   create index page, read uris from file\n"
 "  -V, --version             print version information and exit\n"
 "\n");
-  printf ("\n"
+	printf ("\n"
 /*                                  longest help text w/80 chars per line ---->|\n" */
 "Create a xhtml page with information about the given LV2 plugin.\n"
 "A screenshot of the plugin can be included, the image needs to be created by\n"
 "external means, the path is relative to the created page.\n"
 "lv2toweb writes the page to standard-out.\n"
-"\n");
-  printf ("Report bugs to Robin Gareus <robin@gareus.org>\n"
-          "Website: https://github.com/x42/lv2toweb/\n"
-          );
-  exit (status);
+	"\n");
+	printf ("Report bugs to Robin Gareus <robin@gareus.org>\n"
+	        "Website: https://github.com/x42/lv2toweb/\n"
+	        );
+	exit (status);
 }
 	
 static struct option const long_options[] =
 {
-  {"help", no_argument, 0, 'h'},
-  {"index", required_argument, 0, 'i'},
-  {"screeshot", required_argument, 0, 's'},
-  {"tableindex", required_argument, 0, 't'},
-  {"version", no_argument, 0, 'V'},
-  {NULL, 0, NULL, 0}
+	{"help", no_argument, 0, 'h'},
+	{"index", required_argument, 0, 'i'},
+	{"screeshot", required_argument, 0, 's'},
+	{"tableindex", required_argument, 0, 't'},
+	{"version", no_argument, 0, 'V'},
+	{NULL, 0, NULL, 0}
 };
 
 
 static int decode_switches (int argc, char **argv) {
-  int c;
-  while ((c = getopt_long (argc, argv,
+	int c;
+	while ((c = getopt_long (argc, argv,
 			   "h"	/* help */
 			   "i:"	/* index */
 			   "s:"	/* screeshot */
 			   "t:"	/* index table */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
-    {
-      switch (c) {
+	{ switch (c) {
 	case 'i':
 	  opt_index = optarg;
 	  break;
@@ -763,9 +762,9 @@ static int decode_switches (int argc, char **argv) {
 
 	default:
 	  usage (EXIT_FAILURE);
-      }
-    }
-  return optind;
+		}
+	}
+	return optind;
 }
 
 static void lv2world_init(LilvWorld* world) {
@@ -892,7 +891,7 @@ static int indextable(LilvWorld* world, FILE *f) {
 
 int main(int argc, char** argv) {
 	int ret = 0;
-  int opt = decode_switches (argc, argv);
+	int opt = decode_switches (argc, argv);
 
 	if (opt_indextable) {
 		if (argc != opt) { usage(EXIT_FAILURE); }
