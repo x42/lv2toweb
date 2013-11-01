@@ -56,7 +56,7 @@ LilvNode* uri_midi_event      = NULL;
 
 static char *opt_screenshot   = NULL;
 static char *opt_index        = NULL;
-static bool opt_indextable    = false;
+static char *opt_indextable   = NULL;
 
 static const int port_direction(const LilvPlugin* p, uint32_t index) {
 	const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
@@ -702,7 +702,7 @@ static void usage (int status) {
 "  -h, --help                display this help and exit\n"
 "  -i, --index <path>        add link to index\n"
 "  -s, --screenshot <path>   add link to screenshot\n"
-"  -t, --tableindex          create index page\n"
+"  -t, --tableindex <file>   create index page, read uris from file\n"
 "  -V, --version             print version information and exit\n"
 "\n");
   printf ("\n"
@@ -711,10 +711,7 @@ static void usage (int status) {
 "A screenshot of the plugin can be included, the image needs to be created by\n"
 "external means, the path is relative to the created page.\n"
 "lv2toweb writes the page to standard-out.\n"
-"\n"
-"If the tableindex option is given, multiple URLs can be specified on the\n"
-"commandline and the tool will create a summary overview table\n"
-	"\n");
+"\n");
   printf ("Report bugs to Robin Gareus <robin@gareus.org>\n"
           "Website: https://github.com/x42/lv2toweb/\n"
           );
@@ -726,7 +723,7 @@ static struct option const long_options[] =
   {"help", no_argument, 0, 'h'},
   {"index", required_argument, 0, 'i'},
   {"screeshot", required_argument, 0, 's'},
-  {"tableindex", no_argument, 0, 't'},
+  {"tableindex", required_argument, 0, 't'},
   {"version", no_argument, 0, 'V'},
   {NULL, 0, NULL, 0}
 };
@@ -738,7 +735,7 @@ static int decode_switches (int argc, char **argv) {
 			   "h"	/* help */
 			   "i:"	/* index */
 			   "s:"	/* screeshot */
-			   "t"	/* index table */
+			   "t:"	/* index table */
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
     {
@@ -752,7 +749,7 @@ static int decode_switches (int argc, char **argv) {
 	  break;
 
 	case 't':
-	  opt_indextable = true;
+	  opt_indextable = optarg;
 	  break;
 
 	case 'V':
@@ -820,7 +817,8 @@ static int plugintohtml(LilvWorld* world, const char* plugin_uri) {
 	return (p != NULL ? 0 : -1);
 }
 
-static int indextable(LilvWorld* world, char * const * uris, int count) {
+static int indextable(LilvWorld* world, FILE *f) {
+
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	printf(xhtml_indexhead);
 	printf("<table>\n");
@@ -830,13 +828,19 @@ static int indextable(LilvWorld* world, char * const * uris, int count) {
 	printf("</tr><tr>\n");
 	printf("<th>in</th><th>out</th>");
 	printf("</tr>\n");
-	for (int i=0; i < count; ++i) {
-		LilvNode* uri = lilv_new_uri(world, uris[i]);
+
+	while (!feof(f)) {
+		char furi[4096];
+		if (!fgets(furi, 4096, f)) break;
+		if (strlen(furi) == 0) break;
+		furi[strlen(furi)-1] = '\0';
+
+		LilvNode* uri = lilv_new_uri(world, furi);
 		if (!uri) continue;
 		const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
 		if (!p) continue;
 		printf("<tr>");
-		char *link = strdup(uris[i]);
+		char *link = strdup(furi);
 		for (char *tmp = link; *tmp; ++tmp) {
 			if (*tmp >= 'a' && *tmp <= 'z') continue;
 			if (*tmp >= '0' && *tmp <= '9') continue;
@@ -876,7 +880,7 @@ static int indextable(LilvWorld* world, char * const * uris, int count) {
 		} else {
 			printf("<td class=\"center\">?</td>");
 		}
-		printf("<td><a href=\"%s\" rel=\"nofollow\" class=\"nl\">%s</a></td>", uris[i], uris[i]);
+		printf("<td><a href=\"%s\" rel=\"nofollow\" class=\"nl\">%s</a></td>", furi, furi);
 		printf("</tr>\n");
 		lilv_node_free(uri);
 	}
@@ -891,7 +895,7 @@ int main(int argc, char** argv) {
   int opt = decode_switches (argc, argv);
 
 	if (opt_indextable) {
-		if (argc <= opt) { usage(EXIT_FAILURE); }
+		if (argc != opt) { usage(EXIT_FAILURE); }
 	} else {
 		if (argc != opt + 1) { usage(EXIT_FAILURE); }
 	}
@@ -903,7 +907,14 @@ int main(int argc, char** argv) {
 	if (!opt_indextable) {
 		ret = plugintohtml(world, argv[opt]);
 	} else {
-		ret = indextable(world, &argv[opt], argc - opt);
+		FILE *f;
+		if (!strcmp(opt_indextable, "-")) {
+			f=stdin;
+		} else {
+			f=fopen(opt_indextable, "r");
+		}
+		ret = indextable(world, f);
+		fclose(f);
 	}
 
 	lv2world_free(world);

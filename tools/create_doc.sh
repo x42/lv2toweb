@@ -45,15 +45,13 @@ function genscreenshot {
 }
 
 function gendoc {
-	URIS=""
 	while read uri; do
 		FN=$(echo $uri | sed 's/[^a-zA-Z0-9]/_/g')
-		genscreenshot "$uri" "$OUTDIR/${FN}.png"
+		#genscreenshot "$uri" "$OUTDIR/${FN}.png"
 		$LV2TOWEB -i index.html -s "${FN}.png" "$uri" > "$OUTDIR/${FN}.html"
 		echo "$uri" >> $INDEXFN
-		URIS="$URIS $uri" # TODO split on long lines
 	done
-	$LV2TOWEB -t $URIS > "$OUTDIR/index.html"
+	$LV2TOWEB -t $INDEXFN > "$OUTDIR/index.html"
 }
 
 function cleanup {
