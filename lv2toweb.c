@@ -120,6 +120,26 @@ static const char* port_name(const LilvPlugin* p, const LilvPort* port) {
 	return lilv_node_as_string(name);
 }
 
+static void print_lv2uri(const char* uri) {
+	if        (!strncmp(uri, "http://lv2plug.in/ns/ext/atom#", 30)) {
+		printf("atom:%s", &uri[30]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/lv2core#", 29)) {
+		printf("lv2core:%s", &uri[29]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/ext/urid#", 30)) {
+		printf("lv2urid:%s", &uri[30]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/extensions/ui#", 35)) {
+		printf("lv2ui:%s", &uri[35]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/extensions/units#", 38)) {
+		printf("lv2unit:%s", &uri[38]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/extensions/", 32)) {
+		printf("lv2ext:%s", &uri[32]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/", 21)) {
+		printf("lv2plugin:%s", &uri[21]);
+	} else {
+		printf("%s", uri);
+	}
+}
+
 static const char* plugin_name(const LilvPlugin* p) {
 	LilvNode* val = NULL;
 	char const *title = "";
@@ -311,7 +331,7 @@ print_port(const LilvPlugin* p,
 				printf("Enumeration\n");
 				portAttrib|=2;
 			} else {
-				printf("%s", lu);
+				print_lv2uri(lu);
 			}
 			printf("</li>\n");
 		}
@@ -363,7 +383,7 @@ print_port(const LilvPlugin* p,
 			} else if (!strcmp(ds, "http://lv2plug.in/ns/lv2core#control")) {
 				printf("Control-port");
 			} else {
-				printf("%s",ds);
+				print_lv2uri(ds);
 			}
 			printf("</li>\n");
 		}
@@ -430,15 +450,15 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	const LilvPluginClass* pclass      = lilv_plugin_get_class(p);
 	const LilvNode*        class_label = lilv_plugin_class_get_label(pclass);
 
-	printf("<h1><a name=\"top\"/>LV2 Doc &laquo;%s&raquo;\n", title);
+	if (opt_index) {
+		printf("<p class=\"backlink\"><a href=\"%s\">Back to Index</a></p>\n", opt_index);
+	}
+
+	printf("<h1 class=\"title\"><a name=\"top\"/>LV2 Doc &laquo;%s&raquo;\n", title);
 	if (class_label) {
 		printf(" [%s]\n", lilv_node_as_string(class_label));
 	}
 	printf("</h1>\n");
-
-	if (opt_index) {
-		printf("<p class=\"backlink\"><a href=\"%s\">Back to Index</a></p>\n", opt_index);
-	}
 
 	printf("<div id=\"pluginmeta\"><dl>\n");
 
@@ -498,10 +518,22 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 				printf("<li>");
 				if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#GtkUI")) {
 					printf("Gtk+ UI");
+				} else if (!strcmp(pt, "http://kxstudio.sf.net/ns/lv2ext/external-ui#Widget")) {
+					printf("External UI (KXstudio)");
+				} else if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#external")) {
+					printf("External UI (lv2plug.in)");
+				} else if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#Qt4UI")) {
+					printf("Qt4 UI");
+				} else if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#WindowsUI")) {
+					printf("Windows UI");
+				} else if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#Gtk3UI")) {
+					printf("Gtk3 UI");
+				} else if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#CocoaUI")) {
+					printf("CocoaUI UI (OSX)");
 				} else if (!strcmp(pt, "http://lv2plug.in/ns/extensions/ui#X11UI")) {
 					printf("X11 UI");
 				} else {
-					printf("%s",pt);
+					print_lv2uri(pt);
 				}
 				printf("</li>\n");
 			}
@@ -524,7 +556,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 			} else if (!strcmp(ft, "http://lv2plug.in/ns/lv2core#isLive")) {
 				printf("Live - must be run in realtime");
 			} else {
-				printf("%s", ft);
+				print_lv2uri(ft);
 			}
 			printf("</li>\n");
 
@@ -549,7 +581,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 			} else if (!strcmp(ft, "http://lv2plug.in/ns/lv2core#isLive")) {
 				printf("Live - can be run in realtime");
 			} else {
-				printf("%s", ft);
+				print_lv2uri(ft);
 			}
 			printf("</li>\n");
 		}
@@ -567,7 +599,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 			if (!strcmp(ed, "http://lv2plug.in/ns/ext/state#interface")) {
 				printf("State Interface");
 			} else {
-				printf("%s", ed);
+				print_lv2uri(ed);
 			}
 			printf("</li>\n");
 		}

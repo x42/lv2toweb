@@ -29,6 +29,8 @@
 
 #define DIMMER_BG "background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9gLCgMmI0krqZgAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAHUlEQVQ4y2NkYGCoZ6AAMDFQCEYNGDVg1IDBYgAARyIAn4UMLlsAAAAASUVORK5CYII=);"
 
+#define FAVICON "data:image/x-icon;base64,AAABAAEAEBAAAAEACABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAGxsbAB0dHQA5Kx4ANywhAD0wJABAMSIAQDEjAEEyJABDMyUAQDQmAEM0JQAyMjIAQzQmAEY2JgA0NDQASzclAEY3KQBHNyoASDgoAEk4KQBFOCwATDkoAE86JQBKOSsATTonAFA8KQBMPCwASDwwAFE+KwBUPyoAPT09AFJBMABTQTAAVkIuAFZCLwBWQy8AV0Y2AF1ILwBfTDIAXEs6AF9NNABeTDoAY040AGhPMABjTTkAbVE5AGhSPQBrVTsAalU/AGxbSQBzXUAAeWJEAF9fXwB1ZEsAc2RPAHpoTwB8aU8Agm9XAIFuXQB/b14AgXJeAIp1WQCHdl8AinhjAIt4ZgCPeWYAi3lqAI97YgCPfGwAkX1sAJB/aQCYgmYAmYFqAJOCcQCCgoIAmohyAJqHdgCXiXYAmIp3AJeKeACZi3YAn4xxAJmLeACZi3kAmox+AI2NjQCekIIAo5N/AKOUiACnl38AqpeGAK2bhQComo0AqpuJALCciwCsnpIAs6GLALKijgC0opIAsKKUALGklwCyppIAuKWWALCmnQC1p5kAtqiWALWnnACxp54AsKifALSrogC5rJ8AuK2fAL+uoQC+sqYAwrWjAMK1qAC1tbUAx7epAMe4rgDIvLEAy7ywAMi+rgDIvbIAzL2xAMzCsgDMwbYAzsOwAM3DuQDSxLcA08W5AMTExADSyLcA1Mm9ANbNvQDUzcUA2M7DAM3NzQDf1swA39fNANfX1wDi28oA5d3OAOfe1QDd3d0A5t7XAN/f3wDn4NkA4ODgAObk3gDr5t0A5ubmAO7n4ADv6toA8uvcAPLs3ADv6+QA9e7eAPPu3wDw7OcA9O3mAPfv4QD27uYA8O/qAPjw5QD48esA9/byAPT29AD39/cA+Pj4APz59AD5+vcA/vz3APz//gD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAr6mSkqivr6iXqa+pkpKpr6+MAQ+DqamDNYOokAIflK+viQBLH5KSH1YfklYMdamvr4kASx+Skh9WH5JWDHWpr6+MAQ+DqamDNYOokAIflK+vqZKSqK+vqJepr6mSkqmvrx0aFxgUEw4LDQkIBwYDrxsmVFFOTz89UDcQGRYSEQQgLZ6bmaFmjZ1/JyQjIh4FJTCgfTY4U5qFpECEho8pCiozpXosMXORRaJpcI5HKxU8NKZ+LkKfiEOKljlYiy8cbXesk2OArXJMeKpeRJw6IW55rphqo6diWmSre5WHPihogoF8dHZxZ2FcX1tSSUgyr2xva2VgXVlXVU1KRkE7r4YhAACAAQAAgAEAAIABAACAAQAAhiEAAIABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIABAAA="
+
 static const char xhtml_header[] =
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
 "  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
@@ -36,8 +38,10 @@ static const char xhtml_header[] =
 "  <head>\n"
 "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"
 "  <title>%s [LV2 Plugin Doc]</title>\n"
+"  <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"" FAVICON "\" />\n"
 "  <style type=\"text/css\">\n"
 "body {font-size:12px; background:#888;}\n"
+"h1, h2, h3 {margin:.25em .5em;}\n"
 ".plugintable {border:0px; border-spacing:0; border-collapse:separate; margin:0em auto;}\n"
 ".plugintable td div {min-height:20px;}\n"
 ".plugintable td {padding:.5em 2em 0em 2em; border-width:0; cursor:crosshair;}\n"
@@ -61,10 +65,10 @@ static const char xhtml_header[] =
 ".atomport {"ATOM_ICON"}\n"
 
 "dt,.desc {font-style:italic;}\n"
-"dd {margin-left:1em;}\n"
+"dd {margin-left:1em; white-space: pre-line; white-space: pre; /*white-space: pre-wrap; word-wrap: break-word;*/}\n"
 "ul {padding:0 0 0 1.25em; margin:0;}\n"
 
-"p.backlink {margin-bottom:1em;}\n"
+"p.backlink {margin: .5em 2.0em 0 1.0em; float:left;}\n"
 "p.docs {max-width:30em;}\n"
 "img.screenshot {max-width:100%%; margin:.5em auto .25em auto; cursor:pointer;}\n"
 
@@ -134,6 +138,7 @@ static const char xhtml_indexhead[] =
 "  <title>LV2 Plugin Documentation</title>\n"
 "  <style type=\"text/css\">\n"
 "body {font-size:12px; background:#888;}\n"
+"h1, h2, h3 {margin:.25em 0;}\n"
 "table {border:1px solid black; background:#fff; margin:1em auto; padding:.5em; border-spacing:0; border-collapse:separate;}\n"
 "td {border-right:1px dotted black; border-top:1px solid black; margin:0; padding:.2em .5em;}\n"
 "td.first, th.first {border-left:1px dotted black;}\n"

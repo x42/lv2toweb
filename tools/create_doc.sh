@@ -19,7 +19,7 @@
 # $REPLACEIMAGES # if not set keep existing screenshots
 
 ### executables ###
-: ${LV2TOWEB=../lv2toweb}
+: ${LV2TOWEB=`dirname $0`/../lv2toweb}
 : ${JALVGTK="GTK2_RC_FILES=/home/rgareus/src/git/ardour/build/gtk2_ardour/ardour3_ui_dark.rc LD_LIBRARY_PATH=/home/rgareus/tmp/lv2/lib /home/rgareus/tmp/lv2/bin/jalv.gtk"}
 : ${SCROT=scrot}
 : ${JNOISE=jnoise}
@@ -79,6 +79,7 @@ function cleanup {
 	kill -TERM $JACKPID
 	rm $JALVERR
 	rm $INDEXFN
+	exit
 }
 
 ################################################################################
