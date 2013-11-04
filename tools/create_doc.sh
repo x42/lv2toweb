@@ -54,11 +54,14 @@ function genscreenshot {
 	fi
 	eval "(JACK_DEFAULT_SERVER=lv2screeny ${JALVGTK} \"$URL\" >/dev/null 2>$JALVERR) &"
 	JALVPID=$!
-	sleep 3
+	export JALVPID
+	sleep 2
 	connect_ports
-	scrot --silent --delay 1 --focused "$OUT"
+	scrot --silent --delay 2 --focused "$OUT"
 	disown $JALVPID
 	kill -KILL $JALVPID
+	JALVPID=
+	export JALVPID
 	grep -qe "UI Type:.*external" $JALVERR || convert "$OUT" -crop +0+27 +repage "$OUT"
 }
 
@@ -73,6 +76,10 @@ function gendoc {
 }
 
 function cleanup {
+	if test -n "$JALVPID"; then
+		disown $JALVPID
+		kill -KILL $JALVPID
+	fi
 	disown $JNOISEPID
 	kill -TERM $JNOISEPID
 	disown $JACKPID
@@ -83,6 +90,8 @@ function cleanup {
 }
 
 ################################################################################
+
+JALVPID=
 
 # launch a dummy jack-server for jalv/screenshots
 $JACKD -r -s -n lv2screeny -d dummy &
