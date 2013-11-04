@@ -65,12 +65,15 @@ static const char xhtml_header[] =
 ".atomport {"ATOM_ICON"}\n"
 
 "dt,.desc {font-style:italic;}\n"
-"dd {margin-left:1em; white-space: pre-line; white-space: pre; /*white-space: pre-wrap; word-wrap: break-word;*/}\n"
+"dd {margin-left:1em; white-space: pre-line; white-space: pre; white-space: pre-wrap; word-wrap: break-word;}\n"
+"dd ul {margin-left:1em; white-space: normal;}\n"
 "ul {padding:0 0 0 1.25em; margin:0;}\n"
 
 "p.backlink {margin: .5em 2.0em 0 1.0em; float:left;}\n"
 "p.docs {max-width:30em;}\n"
-"img.screenshot {max-width:100%%; margin:.5em auto .25em auto; cursor:pointer;}\n"
+
+"div.screenshot {text-align:center;}\n"
+"img.screenshot {max-width:100%%; max-height:300px; margin:.5em auto .25em auto; cursor:pointer;}\n"
 
 "#pluginmeta {margin:0 1em; padding:1em; border:1px solid #ccc; float:left; max-width:22em; background-color:#fff;}\n"
 "#portwrapper {max-width:60em; margin:0em auto; float:left; background-color:#fff; border:1px solid #ccc;}\n"

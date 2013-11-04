@@ -460,7 +460,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	}
 	printf("</h1>\n");
 
-	printf("<div id=\"pluginmeta\"><dl>\n");
+	printf("<div id=\"pluginmeta\">\n");
 
 	const char *doc = plugin_docs(p);
 	if (doc) {
@@ -468,6 +468,7 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 		printf("<p class=\"docs\">%s</p>\n", doc);
 	}
 
+	printf("<dl>\n");
 	printf(" <dt>Title</dt><dd>%s</dd>\n", title);
 
 	printf(" <dt>URI</dt><dd><a href=\"%s\">%s</a></dd>\n",
@@ -628,12 +629,12 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	printf("</dl>\n");
 
 	if(opt_screenshot) {
-		printf("<img alt=\"Screenshot\" class=\"screenshot\" src=\"%s\" onclick=\"showimg();\"/>\n", opt_screenshot);
+		printf("<div class=\"screenshot\"><img alt=\"Screenshot\" class=\"screenshot\" src=\"%s\" onclick=\"showimg();\" /></div>\n", opt_screenshot);
 	}
 	printf("</div>\n"); // end meta box
 
 	if(opt_screenshot) {
-		printf("<div id=\"lightbox\" style=\"display:none;\" onclick=\"hideimg();\"/>\n");
+		printf("<div id=\"lightbox\" style=\"display:none;\" onclick=\"hideimg();\">\n");
 		printf("<div><img alt=\"Screenshot\" src=\"%s\"/></div>\n", opt_screenshot);
 		printf("</div>\n");
 	}
