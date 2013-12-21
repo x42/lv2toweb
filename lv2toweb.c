@@ -57,6 +57,7 @@ LilvNode* uri_midi_event      = NULL;
 static char *opt_screenshot   = NULL;
 static char *opt_index        = NULL;
 static char *opt_indextable   = NULL;
+static int   opt_idx_author   = 1;
 
 static const int port_direction(const LilvPlugin* p, uint32_t index) {
 	const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
@@ -732,6 +733,7 @@ static void usage (int status) {
 	printf ("Options:\n"
 "\n");
 	printf ("\n"
+"  -A,                       do not include 'Author' in index table.\n"
 "  -h, --help                display this help and exit\n"
 "  -i, --index <path>        add link to index\n"
 "  -s, --screenshot <path>   add link to screenshot\n"
@@ -765,6 +767,7 @@ static struct option const long_options[] =
 static int decode_switches (int argc, char **argv) {
 	int c;
 	while ((c = getopt_long (argc, argv,
+			   "A"	/* no-index-author */
 			   "h"	/* help */
 			   "i:"	/* index */
 			   "s:"	/* screeshot */
@@ -772,6 +775,10 @@ static int decode_switches (int argc, char **argv) {
 			   "V",	/* version */
 			   long_options, (int *) 0)) != EOF)
 	{ switch (c) {
+	case 'A':
+	  opt_idx_author = 0;
+	  break;
+
 	case 'i':
 	  opt_index = optarg;
 	  break;
@@ -856,7 +863,11 @@ static int indextable(LilvWorld* world, FILE *f) {
 	printf("<table>\n");
 	printf("<tr><th rowspan=\"2\" class=\"first\">Class</th><th rowspan=\"2\">Name</th>");
 	printf("<th colspan=\"2\">Audio/Midi/CTRL</th>");
-	printf("<th rowspan=\"2\">Description</th><th rowspan=\"2\">Author</th><th rowspan=\"2\">URI</th>\n");
+	printf("<th rowspan=\"2\">Description</th>\n");
+	if (opt_idx_author) {
+		printf("<th rowspan=\"2\">Author</th>\n");
+	}
+	printf("<th rowspan=\"2\">URI</th>\n");
 	printf("</tr><tr>\n");
 	printf("<th>in</th><th>out</th>");
 	printf("</tr>\n");
@@ -897,20 +908,22 @@ static int indextable(LilvWorld* world, FILE *f) {
 			printf("<td class=\"center\">-</td>");
 		}
 
-		LilvNode* nme = lilv_plugin_get_author_name(p);
-		if (nme) {
-			LilvNode *eml = lilv_plugin_get_author_email(p);
-			if (eml) {
-				printf("<td class=\"center\"><a href=\"%s\" rel=\"nofollow\" class=\"nl\">%s</a></td>",
-						lilv_node_as_string(eml),
-						lilv_node_as_string(nme));
-				lilv_node_free(eml);
+		if (opt_idx_author) {
+			LilvNode* nme = lilv_plugin_get_author_name(p);
+			if (nme) {
+				LilvNode *eml = lilv_plugin_get_author_email(p);
+				if (eml) {
+					printf("<td class=\"center\"><a href=\"%s?subject=LV2\" rel=\"nofollow\" class=\"nl\">%s</a></td>",
+							lilv_node_as_string(eml),
+							lilv_node_as_string(nme));
+					lilv_node_free(eml);
+				} else {
+					printf("<td class=\"center\">%s</td>", lilv_node_as_string(nme));
+				}
+				lilv_node_free(nme);
 			} else {
-				printf("<td class=\"center\">%s</td>", lilv_node_as_string(nme));
+				printf("<td class=\"center\">?</td>");
 			}
-			lilv_node_free(nme);
-		} else {
-			printf("<td class=\"center\">?</td>");
 		}
 		printf("<td><a href=\"%s\" rel=\"nofollow\" class=\"nl\">%s</a></td>", furi, furi);
 		printf("</tr>\n");
