@@ -40,7 +40,7 @@ static const char xhtml_header[] =
 "  <title>%s [LV2 Plugin Doc]</title>\n"
 "  <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"" FAVICON "\" />\n"
 "  <style type=\"text/css\">\n"
-"body {font-size:12px; background:#aaa;}\n"
+"body {font-size:12px; background:#aaa; min-width:82em;}\n"
 "h1, h2, h3 {margin:.25em .5em;}\n"
 ".plugintable {border:0px; border-spacing:0; border-collapse:separate; margin:0em auto;}\n"
 ".plugintable td div {min-height:20px;}\n"
