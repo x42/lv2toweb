@@ -128,12 +128,16 @@ static void print_lv2uri(const char* uri) {
 		printf("lv2core:%s", &uri[29]);
 	} else if (!strncmp(uri, "http://lv2plug.in/ns/ext/urid#", 30)) {
 		printf("lv2urid:%s", &uri[30]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/ext/time#", 30)) {
+		printf("lv2time:%s", &uri[30]);
 	} else if (!strncmp(uri, "http://lv2plug.in/ns/extensions/ui#", 35)) {
 		printf("lv2ui:%s", &uri[35]);
 	} else if (!strncmp(uri, "http://lv2plug.in/ns/extensions/units#", 38)) {
 		printf("lv2unit:%s", &uri[38]);
 	} else if (!strncmp(uri, "http://lv2plug.in/ns/extensions/", 32)) {
-		printf("lv2ext:%s", &uri[32]);
+		printf("lv2extentions:%s", &uri[32]);
+	} else if (!strncmp(uri, "http://lv2plug.in/ns/ext", 24)) {
+		printf("lv2ext:%s", &uri[24]);
 	} else if (!strncmp(uri, "http://lv2plug.in/ns/", 21)) {
 		printf("lv2plugin:%s", &uri[21]);
 	} else {
@@ -322,15 +326,25 @@ print_port(const LilvPlugin* p,
 			} else if (!strcmp(lu, "http://lv2plug.in/ns/lv2core#integer")) {
 				printf("Integer");
 				portAttrib|=1;
+			} else if (!strcmp(lu, "http://lv2plug.in/ns/lv2core#sampleRate")) {
+				printf("Sample Rate Dependent\n");
 			} else if (!strcmp(lu, "http://lv2plug.in/ns/lv2core#reportsLatency")) {
 				printf("Reports Latency\n");
-			} else if (!strcmp(lu, "http://lv2plug.in/ns/dev/extportinfo#logarithmic")) {
+			} else if (!strcmp(lu, "http://lv2plug.in/ns/ext/port-props/#logarithmic")) {
 				printf("Logarithmic\n");
 			} else if (!strcmp(lu, "http://lv2plug.in/ns/lv2core#toggled")) {
 				printf("Toggle\n");
 			} else if (!strcmp(lu, "http://lv2plug.in/ns/lv2core#enumeration")) {
 				printf("Enumeration\n");
 				portAttrib|=2;
+			} else if (!strcmp(lu, "http://lv2plug.in/ns/ext/port-props/#hasStrictBounds")) {
+				printf("Has Strict Bounds\n");
+			} else if (!strcmp(lu, "http://lv2plug.in/ns/ext/port-props/#trigger")) {
+				printf("Trigger\n");
+			} else if (!strcmp(lu, "http://lv2plug.in/ns/ext/parameters/#gain")) {
+				printf("Gain Control\n");
+			} else if (!strcmp(lu, "http://lv2plug.in/ns/lv2core#connectionOptional")) {
+				printf("Optional Connection\n");
 			} else {
 				print_lv2uri(lu);
 			}
@@ -383,6 +397,8 @@ print_port(const LilvPlugin* p,
 				printf("Port-group: Right");
 			} else if (!strcmp(ds, "http://lv2plug.in/ns/lv2core#control")) {
 				printf("Control-port");
+			} else if (!strcmp(ds, "http://lv2plug.in/ns/ext/parameters/#gain")) {
+				printf("Gain Control");
 			} else {
 				print_lv2uri(ds);
 			}
