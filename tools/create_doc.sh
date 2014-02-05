@@ -17,6 +17,7 @@
 ### options ###
 # $KEEPOUTDIR # if set do not delete $OUTDIR
 # $REPLACEIMAGES # if not set keep existing screenshots
+: ${INDEXOPTS=-A}
 
 ### executables ###
 : ${LV2TOWEB=`dirname $0`/../lv2toweb}
@@ -72,7 +73,7 @@ function gendoc {
 		$LV2TOWEB -i index.html -s "${FN}.png" "$uri" > "$OUTDIR/${FN}.html"
 		echo "$uri" >> $INDEXFN
 	done
-	$LV2TOWEB -t $INDEXFN > "$OUTDIR/index.html"
+	$LV2TOWEB -t $INDEXFN $INDEXOPTS > "$OUTDIR/index.html"
 }
 
 function cleanup {
