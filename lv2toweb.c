@@ -572,9 +572,8 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 		LILV_FOREACH(nodes, i, features) {
 			const char *ft = lilv_node_as_uri(lilv_nodes_get(features, i));
 			printf("<li>");
-			// TODO replace URI -> name
 			if (!strcmp(ft, "http://lv2plug.in/ns/ext/urid#map")) {
-				printf("URI map");
+				printf("URID map");
 			} else if (!strcmp(ft, "http://lv2plug.in/ns/lv2core#isLive")) {
 				printf("Live - must be run in realtime");
 			} else {
