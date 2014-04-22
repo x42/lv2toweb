@@ -490,10 +490,12 @@ static void print_plugin(LilvWorld* world, const LilvPlugin* p) {
 	printf("<dl>\n");
 	printf(" <dt>Title</dt><dd>%s</dd>\n", title);
 
-	printf(" <dt>URI</dt><dd><a href=\"%s\">%s</a></dd>\n",
-			lilv_node_as_uri(lilv_plugin_get_uri(p))
-			,lilv_node_as_uri(lilv_plugin_get_uri(p))
-			);
+	const char *uri = lilv_node_as_uri(lilv_plugin_get_uri(p));
+	if (!strncmp(uri,"http", 4)) {
+		printf(" <dt>URI</dt><dd><a href=\"%s\">%s</a></dd>\n", uri, uri);
+	} else {
+		printf(" <dt>URI</dt><dd>%s</dd>\n", uri);
+	}
 
 	if (class_label) {
 		printf(" <dt>Class</dt><dd>%s</dd>\n", lilv_node_as_string(class_label));
