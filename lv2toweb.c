@@ -140,6 +140,8 @@ static void print_lv2uri(const char* uri) {
 		printf("lv2ext:%s", &uri[24]);
 	} else if (!strncmp(uri, "http://lv2plug.in/ns/", 21)) {
 		printf("lv2plugin:%s", &uri[21]);
+	} else if (!strncmp(uri, "http://kxstudio.sf.net/ns/lv2ext/", 33)) {
+		printf("kxext:%s", &uri[33]);
 	} else {
 		printf("%s", uri);
 	}
