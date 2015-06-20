@@ -21,7 +21,7 @@
 
 ### executables ###
 : ${LV2TOWEB=`dirname $0`/../lv2toweb}
-: ${JALVGTK="GTK2_RC_FILES=/home/rgareus/src/git/ardour/build/gtk2_ardour/ardour3_ui_dark.rc LD_LIBRARY_PATH=/home/rgareus/tmp/lv2/lib /home/rgareus/tmp/lv2/bin/jalv.gtk"}
+: ${JALVGTK="GTK2_RC_FILES=/home/rgareus/data/coding/lv2toweb/tools/ui_dark.rc LD_LIBRARY_PATH=/home/rgareus/tmp/lv2/lib /home/rgareus/tmp/lv2/bin/jalv.gtk -n"}
 : ${SCROT=scrot}
 : ${JNOISE=jnoise}
 : ${JACKD=jackd}
@@ -63,7 +63,7 @@ function genscreenshot {
 	kill -KILL $JALVPID
 	JALVPID=
 	export JALVPID
-	grep -qe "UI Type:.*external" $JALVERR || convert "$OUT" -crop +0+27 +repage "$OUT"
+	#grep -qe "UI Type:.*external" $JALVERR || convert "$OUT" -crop +0+14 +repage "$OUT"
 }
 
 function gendoc {
